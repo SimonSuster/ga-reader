@@ -25,6 +25,8 @@ def get_params(dataset):
         return dailymail_params
     elif dataset=='cbtne':
         return cbtne_params
+    elif dataset=='clicr':
+        return clicr_params
     else:
         raise ValueError("Dataset %s not found"%dataset)
 
@@ -46,11 +48,20 @@ wdw_params = {
         'use_feat'  :   1,
         }
 
+clicr_params = {
+    'nhidden': 256,
+    'char_dim': 0,
+    'dropout': 0.2,
+    'word2vec': '/nas/corpora/accumulate/clicr/embeddings/de004a58-6eef-11e7-ac2f-901b0e5592c8/embeddings', # Pubmed, 200d
+    'train_emb': 1,
+    'use_feat': 0,
+
+}
 cnn_params = {
         'nhidden'   :   256,
         'char_dim'  :   0,
         'dropout'   :   0.2,
-        'word2vec'  :   'data/word2vec_glove.txt',
+        'word2vec'  :   '/nas/corpora/accumulate/clicr/embeddings/005853d6-7164-11e7-b58e-901b0e5592c8/embeddings_with_header', # NYT+Wikipedia, 200d
         'train_emb' :   1,
         'use_feat'  :   0,
         }

@@ -23,8 +23,13 @@ def main(save_path, params):
     shutil.copyfile('config.py','%s/config.py'%save_path)
 
     use_chars = char_dim>0
-    dp = DataPreprocessor.DataPreprocessor()
-    data = dp.preprocess(dataset, no_training_set=False, use_chars=use_chars)
+
+    if dataset == "clicr":
+        dp = DataPreprocessor.DataPreprocessorClicr()
+        data = dp.preprocess("/mnt/b5320167-5dbd-4498-bf34-173ac5338c8d/Datasets/bmj_case_reports_data/dataset_json_concept_annotated/", no_training_set=False, use_chars=use_chars)
+    else:
+        dp = DataPreprocessor.DataPreprocessor()
+        data = dp.preprocess(dataset if dataset != "cnn" else "/mnt/b5320167-5dbd-4498-bf34-173ac5338c8d/Datasets/CNN_DailyMail/cnn/questions/", no_training_set=False, use_chars=use_chars)
 
     print("building minibatch loaders ...")
     batch_loader_train = MiniBatchLoader.MiniBatchLoader(data.training, BATCH_SIZE, 
@@ -79,7 +84,7 @@ def main(save_path, params):
                     total_acc += bsize*acc
                     n += bsize
 
-		val_acc = total_acc/n
+                val_acc = total_acc/n
                 if val_acc > max_acc:
                     max_acc = val_acc
                     m.save_model('%s/best_model.p'%save_path)

@@ -16,7 +16,7 @@ class MiniBatchLoader():
         self.max_num_cand = max(map(lambda x:len(x[3]), self.questions))
         self.max_word_len = MAX_WORD_LEN
         self.shuffle = shuffle
-	self.reset()
+        self.reset()
 
     def __iter__(self):
         """make the object iterable"""

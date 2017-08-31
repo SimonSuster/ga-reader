@@ -17,7 +17,7 @@ You can also get the pretrained Glove vectors from the above link. Place this fi
 ## To run
 Issue the command:
 ```
-python run.py --dataset <wdw|cnn|dailymail|cbtcn|cbtne>
+python run.py --dataset <wdw|cnn|dailymail|cbtcn|cbtne|clicr>
 ```
 
 Complete list of options:
@@ -32,7 +32,7 @@ optional arguments:
   --mode MODE           run mode - (0-train+test, 1-train only, 2-test only,
                         3-val only) (default: 0)
   --nlayers NLAYERS     Number of reader layers (default: 3)
-  --dataset DATASET     Dataset - (cnn || dailymail || cbtcn || cbtne || wdw)
+  --dataset DATASET     Dataset - (cnn || dailymail || cbtcn || cbtne || wdw || clicr)
                         (default: wdw)
   --seed SEED           Seed for different experiments with same settings
                         (default: 1)

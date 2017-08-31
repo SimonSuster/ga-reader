@@ -1,12 +1,17 @@
+import codecs
+
 import numpy as np
 import glob
 import os
 import sys
 
 from config import MAX_WORD_LEN
+from utils.util import load_json, DATA_KEY, DOC_KEY, TITLE_KEY, CONTEXT_KEY, QUERY_KEY, QAS_KEY, ANS_KEY, ORIG_KEY, \
+    TXT_KEY, to_entities, ID_KEY
 
 SYMB_BEGIN = "@begin"
 SYMB_END = "@end"
+
 
 class Data:
 
@@ -19,6 +24,146 @@ class Data:
         self.num_chars = len(dictionary[1])
         self.num_entities = num_entities
         self.inv_dictionary = {v:k for k,v in dictionary[0].items()}
+
+
+class DataPreprocessorClicr:
+    def preprocess(self, question_dir, no_training_set=False, use_chars=True):
+        """
+        preprocess all Clicr data into a standalone Data object.
+        the training set will be left out (to save debugging time) when no_training_set is True.
+        """
+        vocab_f = os.path.join(question_dir, "vocab.txt")
+        word_dictionary, char_dictionary, num_entities = \
+            self.make_dictionary(question_dir, vocab_file=vocab_f)
+        dictionary = (word_dictionary, char_dictionary)
+        if no_training_set:
+            training = None
+        else:
+            print "preparing training data ..."
+            training = self.parse_file(question_dir + "/train1.0.json", dictionary, use_chars)
+        print "preparing validation data ..."
+        validation = self.parse_file(question_dir + "/dev1.0.json", dictionary, use_chars)
+        print "preparing test data ..."
+        test = self.parse_file(question_dir + "/test1.0.json", dictionary, use_chars)
+
+        data = Data(dictionary, num_entities, training, validation, test)
+        return data
+
+    def make_dictionary(self, question_dir, vocab_file):
+
+        if os.path.exists(vocab_file):
+            print "loading vocabularies from " + vocab_file + " ..."
+            vocabularies = map(lambda x: x.strip(), codecs.open(vocab_file, encoding="utf-8").readlines())
+        else:
+            print "no " + vocab_file + " found, constructing the vocabulary list ..."
+            vocab_set = set()
+            n = 0.
+            dataset_train = load_json(question_dir + "train1.0.json")
+            dataset_dev = load_json(question_dir + "dev1.0.json")
+            dataset_test = load_json(question_dir + "test1.0.json")
+
+            for datum in dataset_train[DATA_KEY] + dataset_dev[DATA_KEY] + dataset_test[DATA_KEY]:
+                document = to_entities(
+                    datum[DOC_KEY][CONTEXT_KEY] + " " + datum[DOC_KEY][TITLE_KEY])
+                document = document.lower()
+                _d_words = document.split()
+                vocab_set |= set(_d_words)
+
+                assert document
+                for qa in datum[DOC_KEY][QAS_KEY]:
+                    n += 1
+                    question = to_entities(qa[QUERY_KEY]).lower()
+                    assert question
+                    vocab_set |= set(question.split())
+                    # show progress
+                    if n % 10000 == 0:
+                        print n
+
+            entities = set(e for e in vocab_set if e.startswith('@entity'))
+            # @placehoder, @begin and @end are included in the vocabulary list
+            tokens = vocab_set.difference(entities)
+            tokens.add(SYMB_BEGIN)
+            tokens.add(SYMB_END)
+
+            vocabularies = list(entities) + list(tokens)
+
+            print "writing vocabularies to " + vocab_file + " ..."
+            vocab_fp = codecs.open(vocab_file, "w", encoding="utf-8")
+            vocab_fp.write('\n'.join(vocabularies))
+            vocab_fp.close()
+
+        vocab_size = len(vocabularies)
+        word_dictionary = dict(zip(vocabularies, range(vocab_size)))
+        char_set = set([c for w in vocabularies for c in list(w)])
+        char_set.add(' ')
+        char_dictionary = dict(zip(list(char_set), range(len(char_set))))
+        num_entities = len([v for v in vocabularies if v.startswith('@entity')])
+        print "vocab_size = %d" % vocab_size
+        print "num characters = %d" % len(char_set)
+        print "%d anonymoused entities" % num_entities
+        print "%d other tokens (including @placeholder, %s and %s)" % (
+            vocab_size - num_entities, SYMB_BEGIN, SYMB_END)
+
+        return word_dictionary, char_dictionary, num_entities
+
+    def parse_file(self, file_path, dictionary, use_chars):
+        """
+        parse a *.json dataset file into a list of questions, where each element is tuple(document, query, answer, filename, query_id)
+        """
+        questions = []
+        w_dict, c_dict = dictionary[0], dictionary[1]
+        raw = load_json(file_path)
+        for datum in raw[DATA_KEY]:
+            document = to_entities(
+                datum[DOC_KEY][CONTEXT_KEY] + " " + datum[DOC_KEY][TITLE_KEY])
+            document = document.lower()
+            doc_raw = document.split()
+            # tokens/entities --> indexes
+            doc_words = map(lambda w: w_dict[w], doc_raw)
+            if use_chars:
+                doc_chars = map(lambda w: map(lambda c: c_dict.get(c, c_dict[' ']),
+                                              list(w)[:MAX_WORD_LEN]), doc_raw)
+            else:
+                doc_chars = []
+
+            assert document
+            for qa in datum[DOC_KEY][QAS_KEY]:
+                question = to_entities(qa[QUERY_KEY]).lower()
+                qry_id = qa[ID_KEY]
+                assert question
+                qry_raw = question.split()
+                ans_raw = ""
+                for ans in qa[ANS_KEY]:
+                    if ans[ORIG_KEY] == "dataset":
+                        ans_raw = ("@entity" + "_".join(ans[TXT_KEY].split())).lower()
+                assert ans_raw
+
+                cand_raw = set(w for w in doc_raw if w.startswith('@entity'))
+                # wrap the query with special symbols
+                qry_raw.insert(0, SYMB_BEGIN)
+                qry_raw.append(SYMB_END)
+                try:
+                    cloze = qry_raw.index('@placeholder')
+                except ValueError:
+                    print '@placeholder not found in ', qry_raw, '. Fixing...'
+                    at = qry_raw.index('@')
+                    qry_raw = qry_raw[:at] + [''.join(qry_raw[at:at + 2])] + qry_raw[at + 2:]
+                    cloze = qry_raw.index('@placeholder')
+
+                # tokens/entities --> indexes
+                qry_words = map(lambda w: w_dict[w], qry_raw)
+                if use_chars:
+                    qry_chars = map(lambda w: map(lambda c: c_dict.get(c, c_dict[' ']),
+                                          list(w)[:MAX_WORD_LEN]), qry_raw)
+                else:
+                    qry_chars = []
+                ans = map(lambda w: w_dict.get(w, 0), ans_raw.split())
+                cand = [map(lambda w: w_dict.get(w, 0), c) for c in cand_raw]
+
+                questions.append((doc_words, qry_words, ans, cand, doc_chars, qry_chars, cloze, qry_id))
+
+        return questions
+
 
 class DataPreprocessor:
 
