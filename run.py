@@ -42,8 +42,6 @@ if params['mode']<2:
     train.main(save_path, params)
 
 # test
-if params["dataset"] == "clicr":
-    raise NotImplementedError
 if params['mode']==0 or params['mode']==2:
     test.main(save_path, params)
 elif params['mode']==3:

@@ -98,7 +98,7 @@ def main(save_path, params):
                 print message
                 logger.write(message+'\n')
 
-        m.save_model('%s/model_%d.p'%(save_path,epoch))
+        #m.save_model('%s/model_%d.p'%(save_path,epoch))
         message = "After Epoch %d: Train acc=%.4f, Val acc=%.4f" % (epoch, tr_acc, val_acc)
         print message
         logger.write(message+'\n')

@@ -19,8 +19,18 @@ def main(load_path, params, mode='test'):
     use_feat = params['use_feat']
     gating_fn = params['gating_fn']
 
-    dp = DataPreprocessor.DataPreprocessor()
-    data = dp.preprocess(dataset, no_training_set=True)
+    if dataset == "clicr":
+        dp = DataPreprocessor.DataPreprocessorClicr()
+        data = dp.preprocess(
+            "/mnt/b5320167-5dbd-4498-bf34-173ac5338c8d/Datasets/bmj_case_reports_data/dataset_json_concept_annotated/",
+            no_training_set=True)
+    else:
+        dp = DataPreprocessor.DataPreprocessor()
+        if dataset == "cnn":
+            dataset = "/mnt/b5320167-5dbd-4498-bf34-173ac5338c8d/Datasets/CNN_DailyMail/cnn/questions/"
+        elif dataset == "wdw":
+            dataset = "/mnt/b5320167-5dbd-4498-bf34-173ac5338c8d/Datasets/wdw/"
+        data = dp.preprocess(dataset, no_training_set=True)
     inv_vocab = data.inv_dictionary
 
     print("building minibatch loaders ...")
