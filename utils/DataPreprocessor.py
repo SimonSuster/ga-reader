@@ -27,30 +27,30 @@ class Data:
 
 
 class DataPreprocessorClicr:
-    def preprocess(self, question_dir, no_training_set=False, use_chars=True):
+    def preprocess(self, question_dir, no_training_set=False, use_chars=True, relabeling=True, remove_notfound=True):
         """
         preprocess all Clicr data into a standalone Data object.
         the training set will be left out (to save debugging time) when no_training_set is True.
         """
         vocab_f = os.path.join(question_dir, "vocab.txt")
         word_dictionary, char_dictionary, num_entities = \
-            self.make_dictionary(question_dir, vocab_file=vocab_f)
+            self.make_dictionary(question_dir, vocab_file=vocab_f, relabeling=relabeling, remove_notfound=remove_notfound)
         dictionary = (word_dictionary, char_dictionary)
         if no_training_set:
             training = None
         else:
             print "preparing training data ..."
-            training = self.parse_file(question_dir + "/train1.0.json", dictionary, use_chars)
+            training, train_relabeling_dicts = self.parse_file(question_dir + "/train1.0.json", dictionary, use_chars, relabeling, remove_notfound)
         print "preparing validation data ..."
-        validation = self.parse_file(question_dir + "/dev1.0.json", dictionary, use_chars)
+        validation, val_relabeling_dicts = self.parse_file(question_dir + "/dev1.0.json", dictionary, use_chars, relabeling, remove_notfound)
         print "preparing test data ..."
-        test = self.parse_file(question_dir + "/test1.0.json", dictionary, use_chars)
+        test, test_relabeling_dicts = self.parse_file(question_dir + "/test1.0.json", dictionary, use_chars, relabeling, remove_notfound)
 
         data = Data(dictionary, num_entities, training, validation, test)
         return data
 
-    def make_dictionary(self, question_dir, vocab_file):
-
+    def make_dictionary(self, question_dir, vocab_file, relabeling, remove_notfound):
+        vocab_file = "{}_relab{}_remove{}".format(vocab_file, relabeling, remove_notfound)
         if os.path.exists(vocab_file):
             print "loading vocabularies from " + vocab_file + " ..."
             vocabularies = map(lambda x: x.strip(), codecs.open(vocab_file, encoding="utf-8").readlines())
@@ -66,16 +66,46 @@ class DataPreprocessorClicr:
                 document = to_entities(
                     datum[DOC_KEY][CONTEXT_KEY] + " " + datum[DOC_KEY][TITLE_KEY])
                 document = document.lower()
-                _d_words = document.split()
-                vocab_set |= set(_d_words)
 
                 assert document
                 for qa in datum[DOC_KEY][QAS_KEY]:
-                    n += 1
+                    doc_raw = document.split()
                     question = to_entities(qa[QUERY_KEY]).lower()
                     assert question
-                    vocab_set |= set(question.split())
+                    qry_raw = question.split()
+                    ans_raw = ""
+                    for ans in qa[ANS_KEY]:
+                        if ans[ORIG_KEY] == "dataset":
+                            ans_raw = ("@entity" + "_".join(ans[TXT_KEY].split())).lower()
+                    assert ans_raw
+                    if remove_notfound:
+                        if ans_raw not in doc_raw:
+                            found_umls = False
+                            for ans in qa[ANS_KEY]:
+                                if ans[ORIG_KEY] == "UMLS":
+                                    umls_answer = ("@entity" + "_".join(ans[TXT_KEY].split())).lower()
+                                    if umls_answer in doc_raw:
+                                        found_umls = True
+                                        ans_raw = umls_answer
+                            if not found_umls:
+                                continue
+                    if relabeling:
+                        assert ans_raw in doc_raw
+                        entity_dict = {}
+                        entity_id = 0
+                        lst = doc_raw + qry_raw
+                        if not remove_notfound:
+                            lst.append(ans_raw)
+                        for word in lst:
+                            if (word.startswith('@entity')) and (word not in entity_dict):
+                                entity_dict[word] = '@entity' + str(entity_id)
+                                entity_id += 1
+                        qry_raw = [entity_dict[w] if w in entity_dict else w for w in qry_raw]
+                        doc_raw = [entity_dict[w] if w in entity_dict else w for w in doc_raw]
+                    vocab_set |= set(qry_raw)
+                    vocab_set |= set(doc_raw)
                     # show progress
+                    n += 1
                     if n % 10000 == 0:
                         print n
 
@@ -106,28 +136,22 @@ class DataPreprocessorClicr:
 
         return word_dictionary, char_dictionary, num_entities
 
-    def parse_file(self, file_path, dictionary, use_chars):
+    def parse_file(self, file_path, dictionary, use_chars, relabeling, remove_notfound):
         """
         parse a *.json dataset file into a list of questions, where each element is tuple(document, query, answer, filename, query_id)
         """
         questions = []
         w_dict, c_dict = dictionary[0], dictionary[1]
+        relabeling_dicts = []
         raw = load_json(file_path)
         for datum in raw[DATA_KEY]:
             document = to_entities(
                 datum[DOC_KEY][CONTEXT_KEY] + " " + datum[DOC_KEY][TITLE_KEY])
             document = document.lower()
-            doc_raw = document.split()
-            # tokens/entities --> indexes
-            doc_words = map(lambda w: w_dict[w], doc_raw)
-            if use_chars:
-                doc_chars = map(lambda w: map(lambda c: c_dict.get(c, c_dict[' ']),
-                                              list(w)[:MAX_WORD_LEN]), doc_raw)
-            else:
-                doc_chars = []
 
             assert document
             for qa in datum[DOC_KEY][QAS_KEY]:
+                doc_raw = document.split()
                 question = to_entities(qa[QUERY_KEY]).lower()
                 qry_id = qa[ID_KEY]
                 assert question
@@ -137,8 +161,40 @@ class DataPreprocessorClicr:
                     if ans[ORIG_KEY] == "dataset":
                         ans_raw = ("@entity" + "_".join(ans[TXT_KEY].split())).lower()
                 assert ans_raw
+                if remove_notfound:
+                    if ans_raw not in doc_raw:
+                        found_umls = False
+                        for ans in qa[ANS_KEY]:
+                            if ans[ORIG_KEY] == "UMLS":
+                                umls_answer = ("@entity" + "_".join(ans[TXT_KEY].split())).lower()
+                                if umls_answer in doc_raw:
+                                    found_umls = True
+                                    ans_raw = umls_answer
+                        if not found_umls:
+                            continue
+                if relabeling:
+                    assert ans_raw in doc_raw
+                    qry_raw = question.split()
+                    entity_dict = {}
+                    entity_id = 0
+                    lst = doc_raw + qry_raw
+                    if not remove_notfound:
+                        lst.append(ans_raw)
+                    for word in lst:
+                        if (word.startswith('@entity')) and (word not in entity_dict):
+                            entity_dict[word] = '@entity' + str(entity_id)
+                            entity_id += 1
+                    qry_raw = [entity_dict[w] if w in entity_dict else w for w in qry_raw]
+                    doc_raw = [entity_dict[w] if w in entity_dict else w for w in doc_raw]
+                    ans_raw = entity_dict[ans_raw]
+                    inv_entity_dict = {ent_id: ent_ans for ent_ans, ent_id in entity_dict.items()}
+                    assert len(entity_dict) == len(inv_entity_dict)
+                    relabeling_dicts.append((qa[ID_KEY], inv_entity_dict))
+                else:
+                    relabeling_dicts.append((qa[ID_KEY], None))
 
-                cand_raw = set(w for w in doc_raw if w.startswith('@entity'))
+                cand_e = set(w for w in doc_raw if w.startswith('@entity'))
+                cand_raw = [[e] for e in cand_e]
                 # wrap the query with special symbols
                 qry_raw.insert(0, SYMB_BEGIN)
                 qry_raw.append(SYMB_END)
@@ -151,6 +207,9 @@ class DataPreprocessorClicr:
                     cloze = qry_raw.index('@placeholder')
 
                 # tokens/entities --> indexes
+                doc_words = map(lambda w: w_dict[w], doc_raw)
+
+                # tokens/entities --> indexes
                 qry_words = map(lambda w: w_dict[w], qry_raw)
                 if use_chars:
                     qry_chars = map(lambda w: map(lambda c: c_dict.get(c, c_dict[' ']),
@@ -160,9 +219,15 @@ class DataPreprocessorClicr:
                 ans = map(lambda w: w_dict.get(w, 0), ans_raw.split())
                 cand = [map(lambda w: w_dict.get(w, 0), c) for c in cand_raw]
 
+                if use_chars:
+                    doc_chars = map(lambda w: map(lambda c: c_dict.get(c, c_dict[' ']),
+                                                  list(w)[:MAX_WORD_LEN]), doc_raw)
+                else:
+                    doc_chars = []
+
                 questions.append((doc_words, qry_words, ans, cand, doc_chars, qry_chars, cloze, qry_id))
 
-        return questions
+        return questions, relabeling_dicts
 
 
 class DataPreprocessor:

@@ -29,7 +29,11 @@ def main(save_path, params):
         data = dp.preprocess("/mnt/b5320167-5dbd-4498-bf34-173ac5338c8d/Datasets/bmj_case_reports_data/dataset_json_concept_annotated/", no_training_set=False, use_chars=use_chars)
     else:
         dp = DataPreprocessor.DataPreprocessor()
-        data = dp.preprocess(dataset if dataset != "cnn" else "/mnt/b5320167-5dbd-4498-bf34-173ac5338c8d/Datasets/CNN_DailyMail/cnn/questions/", no_training_set=False, use_chars=use_chars)
+        if dataset == "cnn":
+            dataset = "/mnt/b5320167-5dbd-4498-bf34-173ac5338c8d/Datasets/CNN_DailyMail/cnn/questions/"
+        elif dataset == "wdw":
+            dataset = "/mnt/b5320167-5dbd-4498-bf34-173ac5338c8d/Datasets/wdw/"
+        data = dp.preprocess(dataset, no_training_set=False, use_chars=use_chars)
 
     print("building minibatch loaders ...")
     batch_loader_train = MiniBatchLoader.MiniBatchLoader(data.training, BATCH_SIZE, 
@@ -38,8 +42,8 @@ def main(save_path, params):
 
     print("building network ...")
     W_init, embed_dim, = Helpers.load_word2vec_embeddings(data.dictionary[0], word2vec)
-    m = GAReader.Model(nlayers, data.vocab_size, data.num_chars, W_init, 
-            nhidden, embed_dim, dropout, train_emb, 
+    m = GAReader.Model(nlayers, data.vocab_size, data.num_chars, W_init,
+            nhidden, embed_dim, dropout, train_emb,
             char_dim, use_feat, gating_fn)
 
     print("training ...")
