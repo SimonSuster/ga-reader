@@ -64,6 +64,8 @@ def main(load_path, params, mode='test'):
         fids += fnames
         n += bsize
 
+        #Helpers.show_predicted_vs_ground_truth(probs, a, )
+
     logger = open(load_path+'/log','a',0)
     message = '%s Loss %.4e acc=%.4f' % (mode.upper(), total_loss/n, total_acc/n)
     print message

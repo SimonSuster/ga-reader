@@ -1,7 +1,9 @@
+import os
+os.environ["THEANO_FLAGS"] = "mode=FAST_RUN,device=gpu,floatX=float32"
+
 import train
 import test
 import argparse
-import os
 import numpy as np
 import random
 

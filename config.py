@@ -49,7 +49,7 @@ wdw_params = {
         }
 
 clicr_params = {
-    'nhidden': 256,
+    'nhidden': 128,
     'char_dim': 0,
     'dropout': 0.2,
     'word2vec': '/nas/corpora/accumulate/clicr/embeddings/de004a58-6eef-11e7-ac2f-901b0e5592c8/embeddings', # Pubmed, 200d

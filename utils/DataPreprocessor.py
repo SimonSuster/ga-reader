@@ -15,7 +15,8 @@ SYMB_END = "@end"
 
 class Data:
 
-    def __init__(self, dictionary, num_entities, training, validation, test):
+    def __init__(self, dictionary, num_entities, training, validation, test, train_relabeling_dicts,
+                 val_relabeling_dicts, test_relabeling_dicts):
         self.dictionary = dictionary
         self.training = training
         self.validation = validation
@@ -24,6 +25,9 @@ class Data:
         self.num_chars = len(dictionary[1])
         self.num_entities = num_entities
         self.inv_dictionary = {v:k for k,v in dictionary[0].items()}
+        self.train_relabeling_dicts = train_relabeling_dicts
+        self.val_relabeling_dicts = val_relabeling_dicts
+        self.test_relabeling_dicts = test_relabeling_dicts
 
 
 class DataPreprocessorClicr:
@@ -38,6 +42,7 @@ class DataPreprocessorClicr:
         dictionary = (word_dictionary, char_dictionary)
         if no_training_set:
             training = None
+            train_relabeling_dicts = None
         else:
             print "preparing training data ..."
             training, train_relabeling_dicts = self.parse_file(question_dir + "/train1.0.json", dictionary, use_chars, relabeling, remove_notfound)
@@ -46,7 +51,7 @@ class DataPreprocessorClicr:
         print "preparing test data ..."
         test, test_relabeling_dicts = self.parse_file(question_dir + "/test1.0.json", dictionary, use_chars, relabeling, remove_notfound)
 
-        data = Data(dictionary, num_entities, training, validation, test)
+        data = Data(dictionary, num_entities, training, validation, test, train_relabeling_dicts, val_relabeling_dicts, test_relabeling_dicts)
         return data
 
     def make_dictionary(self, question_dir, vocab_file, relabeling, remove_notfound):
