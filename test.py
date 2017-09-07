@@ -56,6 +56,16 @@ def main(load_path, params, mode='test'):
         loss, acc, probs = outs[:3]
         attns += [[fnames[0],probs[0,:]] + [o[0,:,:] for o in outs[3:]]] # store one attention
 
+        pred_ans = []
+        for f in range(len(fnames)):
+            pred_cand = probs[f].argmax()
+            cand_pos = [c for c, i in enumerate(m_c[f]) if i == 1]
+            pred_cand_pos = cand_pos[pred_cand]
+            pred_cand_id = dw[f, [pred_cand_pos], 0]  # n, doc_id, 1
+            pred_ent_anonym = inv_vocab[pred_cand_id]
+            pred_ent_name = data.test_relabeling_dicts[fnames[f]][pred_ent_anonym]
+            pred_ans.append(pred_ent_name)
+
         bsize = dw.shape[0]
         total_loss += bsize*loss
         total_acc += bsize*acc

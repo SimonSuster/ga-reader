@@ -147,7 +147,7 @@ class DataPreprocessorClicr:
         """
         questions = []
         w_dict, c_dict = dictionary[0], dictionary[1]
-        relabeling_dicts = []
+        relabeling_dicts = {}
         raw = load_json(file_path)
         for datum in raw[DATA_KEY]:
             document = to_entities(
@@ -194,11 +194,11 @@ class DataPreprocessorClicr:
                     ans_raw = entity_dict[ans_raw]
                     inv_entity_dict = {ent_id: ent_ans for ent_ans, ent_id in entity_dict.items()}
                     assert len(entity_dict) == len(inv_entity_dict)
-                    relabeling_dicts.append((qa[ID_KEY], inv_entity_dict))
+                    relabeling_dicts[qa[ID_KEY]] = inv_entity_dict
                 else:
-                    relabeling_dicts.append((qa[ID_KEY], None))
+                    relabeling_dicts[qa[ID_KEY]] = None
 
-                cand_e = set(w for w in doc_raw if w.startswith('@entity'))
+                cand_e = [w for w in doc_raw if w.startswith('@entity')]
                 cand_raw = [[e] for e in cand_e]
                 # wrap the query with special symbols
                 qry_raw.insert(0, SYMB_BEGIN)
