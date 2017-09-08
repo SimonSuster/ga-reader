@@ -1,12 +1,9 @@
 import codecs
-
-import numpy as np
 import glob
 import os
-import sys
 
 from config import MAX_WORD_LEN
-from utils.util import load_json, DATA_KEY, DOC_KEY, TITLE_KEY, CONTEXT_KEY, QUERY_KEY, QAS_KEY, ANS_KEY, ORIG_KEY, \
+from utils import load_json, DATA_KEY, DOC_KEY, TITLE_KEY, CONTEXT_KEY, QUERY_KEY, QAS_KEY, ANS_KEY, ORIG_KEY, \
     TXT_KEY, to_entities, ID_KEY
 
 SYMB_BEGIN = "@begin"
