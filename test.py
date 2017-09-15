@@ -62,7 +62,8 @@ def main(load_path, params, mode='test'):
             pred_cand_pos = cand_pos[pred_cand]
             pred_cand_id = dw[f, pred_cand_pos, 0]  # n, doc_id, 1
             pred_ent_anonym = inv_vocab[pred_cand_id]
-            pred_ent_name = data.test_relabeling_dicts[fnames[f]][pred_ent_anonym]
+            relabeling_dicts = data.test_relabeling_dicts if mode == 'test' else data.val_relabeling_dicts
+            pred_ent_name = relabeling_dicts[fnames[f]][pred_ent_anonym]
             pred_ans[fnames[f]] = pred_ent_name
 
         bsize = dw.shape[0]
@@ -73,12 +74,12 @@ def main(load_path, params, mode='test'):
         fids += fnames
         n += bsize
 
-    if params["dataset"] == "clicr" and mode == 'test':
+    if params["dataset"] == "clicr" and (mode == 'test' or mode== 'validation'):
         print("writing predictions")
         preds_data = utils.to_output_preds(pred_ans)
         preds_filepath = load_path + '/test.preds'
         utils.write_preds(preds_data, file_name=preds_filepath)
-        utils.external_eval(preds_filepath, preds_filepath + ".scores", params["test_file"])
+        utils.external_eval(preds_filepath, preds_filepath + ".scores", params["test_file"] if mode == 'test' else params["validation_file"])
     logger = open(load_path + '/log', 'a', 0)
     message = '%s Loss %.4e acc=%.4f' % (mode.upper(), total_loss / n, total_acc / n)
     print message

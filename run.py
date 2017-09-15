@@ -16,6 +16,12 @@ parser.add_argument('--mode', dest='mode', type=int, default=0,
                     help='run mode - (0-train+test, 1-train only, 2-test only, 3-val only)')
 parser.add_argument('--nlayers', dest='nlayers', type=int, default=3,
                     help='Number of reader layers')
+parser.add_argument('--nhidden', dest='nhidden', type=int, default=128,
+                    help='Number of hidden units')
+parser.add_argument('--dropout', dest='dropout', type=float, default=0.2,
+                    help='Dropout rate')
+parser.add_argument('--use_feat', dest='use_feat', type=int, default=0,
+                    help='use indicator feature (0-no, 1-yes)')
 parser.add_argument('--dataset', dest='dataset', type=str, default='wdw',
                     help='Dataset - (cnn || dailymail || cbtcn || cbtne || wdw || clicr)')
 parser.add_argument('--seed', dest='seed', type=int, default=1,
