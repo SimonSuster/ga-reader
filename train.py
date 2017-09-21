@@ -72,7 +72,7 @@ def main(save_path, params):
 
             message = "Epoch %d TRAIN loss=%.4e acc=%.4f elapsed=%.1f" % (
                 epoch, loss, tr_acc, time.time() - estart)
-            print message
+            print(message)
             logger.write(message + '\n')
 
             num_iter += 1
@@ -96,12 +96,12 @@ def main(save_path, params):
                     new_max = True
                 message = "Epoch %d VAL loss=%.4e acc=%.4f max_acc=%.4f" % (
                     epoch, total_loss / n, val_acc, max_acc)
-                print message
+                print(message)
                 logger.write(message + '\n')
 
         # m.save_model('%s/model_%d.p'%(save_path,epoch))
         message = "After Epoch %d: Train acc=%.4f, Val acc=%.4f" % (epoch, tr_acc, val_acc)
-        print message
+        print(message)
         logger.write(message + '\n')
 
         # learning schedule

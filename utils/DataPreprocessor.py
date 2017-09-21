@@ -46,7 +46,7 @@ class DataPreprocessorClicr:
         print "preparing validation data ..."
         validation, val_relabeling_dicts = self.parse_file(question_dir + "/dev1.0.json", dictionary, use_chars, relabeling, remove_notfound)
         print "preparing test data ..."
-        test, test_relabeling_dicts = self.parse_file(question_dir + "/test1.0.json", dictionary, use_chars, relabeling, remove_notfound)
+        test, test_relabeling_dicts = self.parse_file(question_dir + "/test1.0.json", dictionary, use_chars, relabeling, remove_notfound=False)
 
         data = Data(dictionary, num_entities, training, validation, test, train_relabeling_dicts, val_relabeling_dicts, test_relabeling_dicts)
         return data
@@ -62,9 +62,9 @@ class DataPreprocessorClicr:
             n = 0.
             dataset_train = load_json(question_dir + "train1.0.json")
             dataset_dev = load_json(question_dir + "dev1.0.json")
-            dataset_test = load_json(question_dir + "test1.0.json")
 
-            for datum in dataset_train[DATA_KEY] + dataset_dev[DATA_KEY] + dataset_test[DATA_KEY]:
+            # train+dev here (remove_notfound=True|False), test below
+            for datum in dataset_train[DATA_KEY] + dataset_dev[DATA_KEY]:
                 document = to_entities(
                     datum[DOC_KEY][CONTEXT_KEY] + " " + datum[DOC_KEY][TITLE_KEY])
                 document = document.lower()
@@ -92,7 +92,7 @@ class DataPreprocessorClicr:
                             if not found_umls:
                                 continue
                     if relabeling:
-                        assert ans_raw in doc_raw
+                        #assert ans_raw in doc_raw
                         entity_dict = {}
                         entity_id = 0
                         lst = doc_raw + qry_raw
@@ -110,6 +110,44 @@ class DataPreprocessorClicr:
                     n += 1
                     if n % 10000 == 0:
                         print n
+            # treat test separately to allow remove_notfound=False
+            dataset_test = load_json(question_dir + "test1.0.json")
+            for datum in dataset_test[DATA_KEY]:
+                document = to_entities(
+                    datum[DOC_KEY][CONTEXT_KEY] + " " + datum[DOC_KEY][TITLE_KEY])
+                document = document.lower()
+
+                assert document
+                for qa in datum[DOC_KEY][QAS_KEY]:
+                    doc_raw = document.split()
+                    question = to_entities(qa[QUERY_KEY]).lower()
+                    assert question
+                    qry_raw = question.split()
+                    ans_raw = ""
+                    for ans in qa[ANS_KEY]:
+                        if ans[ORIG_KEY] == "dataset":
+                            ans_raw = ("@entity" + "_".join(ans[TXT_KEY].split())).lower()
+                    assert ans_raw
+                    if relabeling:
+                        # assert ans_raw in doc_raw
+                        entity_dict = {}
+                        entity_id = 0
+                        lst = doc_raw + qry_raw
+                        if not remove_notfound:
+                            lst.append(ans_raw)
+                        for word in lst:
+                            if (word.startswith('@entity')) and (word not in entity_dict):
+                                entity_dict[word] = '@entity' + str(entity_id)
+                                entity_id += 1
+                        qry_raw = [entity_dict[w] if w in entity_dict else w for w in qry_raw]
+                        doc_raw = [entity_dict[w] if w in entity_dict else w for w in doc_raw]
+                    vocab_set |= set(qry_raw)
+                    vocab_set |= set(doc_raw)
+                    # show progress
+                    n += 1
+                    if n % 10000 == 0:
+                        print n
+
 
             entities = set(e for e in vocab_set if e.startswith('@entity'))
             # @placehoder, @begin and @end are included in the vocabulary list
@@ -175,7 +213,7 @@ class DataPreprocessorClicr:
                         if not found_umls:
                             continue
                 if relabeling:
-                    assert ans_raw in doc_raw
+                    #assert ans_raw in doc_raw
                     qry_raw = question.split()
                     entity_dict = {}
                     entity_id = 0

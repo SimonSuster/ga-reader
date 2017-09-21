@@ -1,4 +1,5 @@
 import json
+import os
 import subprocess
 
 DATA_KEY = "data"
@@ -127,3 +128,26 @@ def intersect_on_ids(dataset, predictions):
             new_data.append(datum_instance(new_doc, datum[SOURCE_KEY]))
 
     return dataset_instance(dataset[VERSION_KEY], new_data)
+
+
+def get_file_list(topdir, identifiers=None, all_levels=False):
+    """
+    :param identifiers: a list of strings, any of which should be in the filename
+    :param all_levels: get filenames recursively
+    """
+    if identifiers is None:
+        identifiers = [""]
+    filelist = []
+    for root, dirs, files in os.walk(topdir):
+        if not all_levels and (root != topdir):  # don't go deeper
+            continue
+        for filename in files:
+            get = False
+            for i in identifiers:
+                if i in filename:
+                    get = True
+            if get:
+                fullname = os.path.join(root, filename)
+                filelist.append(fullname)
+
+    return filelist
