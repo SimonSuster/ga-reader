@@ -48,23 +48,23 @@ class MiniBatchLoader():
 
         # randomly shuffle the question indices in each bin
         if self.shuffle:
-            for ixs in self.bins.itervalues():
+            for ixs in self.bins.values():
                 random.shuffle(ixs)
 
         # construct a list of mini-batches where each batch is a list of question indices
         # questions within the same batch have identical max document length 
         self.batch_pool = []
-        for l, ixs in self.bins.iteritems():
+        for l, ixs in self.bins.items():
             n = len(ixs)
             k = n / self.batch_size if n % self.batch_size == 0 else n / self.batch_size + 1
-            ixs_list = [(ixs[self.batch_size * i:min(n, self.batch_size * (i + 1))], l) for i in range(k)]
+            ixs_list = [(ixs[self.batch_size * i:min(n, self.batch_size * (i + 1))], l) for i in range(int(k))]
             self.batch_pool += ixs_list
 
         # randomly shuffle the mini-batches
         if self.shuffle:
             random.shuffle(self.batch_pool)
 
-    def next(self):
+    def __next__(self):
         """load the next batch"""
         if self.ptr == len(self.batch_pool):
             self.reset()
@@ -125,7 +125,7 @@ class MiniBatchLoader():
         tt = np.zeros((len(types), self.max_word_len), dtype='int32')  # type characters
         tm = np.zeros((len(types), self.max_word_len), dtype='int32')  # type mask
         n = 0
-        for k, v in types.iteritems():
+        for k, v in types.items():
             tt[n, :len(k)] = np.array(k)
             tm[n, :len(k)] = 1
             for (sw, bn, sn) in v:

@@ -1,4 +1,4 @@
-import cPickle as pkl
+import pickle
 
 import numpy as np
 
@@ -17,12 +17,14 @@ def main(load_path, params, mode='test'):
     char_dim = params['char_dim']
     use_feat = params['use_feat']
     gating_fn = params['gating_fn']
+    relabeling = params['relabeling']
 
     if dataset == "clicr":
         dp = DataPreprocessor.DataPreprocessorClicr()
         data = dp.preprocess(
-            "/mnt/b5320167-5dbd-4498-bf34-173ac5338c8d/Datasets/bmj_case_reports_data/dataset_json_concept_annotated/",
-            no_training_set=True)
+            #"/mnt/b5320167-5dbd-4498-bf34-173ac5338c8d/Datasets/bmj_case_reports_data/dataset_json_concept_annotated/",
+            "data/",
+            no_training_set=True, relabeling=relabeling)
     else:
         dp = DataPreprocessor.DataPreprocessor()
         if dataset == "cnn":
@@ -61,9 +63,10 @@ def main(load_path, params, mode='test'):
             cand_pos = [c for c, i in enumerate(m_c[f]) if i == 1]
             pred_cand_pos = cand_pos[pred_cand]
             pred_cand_id = dw[f, pred_cand_pos, 0]  # n, doc_id, 1
-            pred_ent_anonym = inv_vocab[pred_cand_id]
-            relabeling_dicts = data.test_relabeling_dicts if mode == 'test' else data.val_relabeling_dicts
-            pred_ent_name = relabeling_dicts[fnames[f]][pred_ent_anonym]
+            pred_ent_name = inv_vocab[pred_cand_id]
+            if relabeling:
+                relabeling_dicts = data.test_relabeling_dicts if mode == 'test' else data.val_relabeling_dicts
+                pred_ent_name = relabeling_dicts[fnames[f]][pred_ent_name]
             pred_ans[fnames[f]] = pred_ent_name
 
         bsize = dw.shape[0]
@@ -74,20 +77,20 @@ def main(load_path, params, mode='test'):
         fids += fnames
         n += bsize
 
-    if params["dataset"] == "clicr" and (mode == 'test' or mode== 'validation'):
+    if params["dataset"] == "clicr" and (mode == 'test' or mode == 'validation'):
         print("writing predictions")
         preds_data = utils.to_output_preds(pred_ans)
         preds_filepath = load_path + '/test.preds'
         utils.write_preds(preds_data, file_name=preds_filepath)
         utils.external_eval(preds_filepath, preds_filepath + ".scores", params["test_file"] if mode == 'test' else params["validation_file"])
-    logger = open(load_path + '/log', 'a', 0)
+    logger = open(load_path + '/log', 'a')
     message = '%s Loss %.4e acc=%.4f' % (mode.upper(), total_loss / n, total_acc / n)
-    print message
+    print(message)
     logger.write(message + '\n')
     logger.close()
 
     np.save('%s/%s.probs' % (load_path, mode), np.asarray(pr))
-    pkl.dump(attns, open('%s/%s.attns' % (load_path, mode), 'w'))
+    pickle.dump(attns, open('%s/%s.attns' % (load_path, mode), 'w'))
     f = open('%s/%s.ids' % (load_path, mode), 'w')
     for item in fids: f.write(item + '\n')
     f.close()

@@ -4,6 +4,7 @@ BATCH_SIZE = 32
 GRAD_CLIP = 10
 # Learning rate
 LEARNING_RATE = 0.0005
+#LEARNING_RATE = 0.
 # Maximum number of steps in BPTT
 GRAD_STEPS = -1
 # Number of epochs for training

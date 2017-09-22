@@ -1,9 +1,8 @@
-import cPickle as pickle
-
+import pickle
 import theano
 
 from config import *
-from layers import *
+from model.layers import *
 
 
 def prepare_input(d, q):
@@ -195,11 +194,11 @@ class Model:
         return final, final_v, l_prob, l_docembed.W, attentions
 
     def load_model(self, load_path):
-        with open(load_path, 'r') as f:
+        with open(load_path, 'rb') as f:
             data = pickle.load(f)
         L.set_all_param_values(self.network, data)
 
     def save_model(self, save_path):
         data = L.get_all_param_values(self.network)
-        with open(save_path, 'w') as f:
+        with open(save_path, 'wb') as f:
             pickle.dump(data, f)

@@ -17,7 +17,7 @@ def main(save_path, params):
     char_dim = params['char_dim']
     use_feat = params['use_feat']
     gating_fn = params['gating_fn']
-
+    relabeling = params['relabeling']
     # save settings
     shutil.copyfile('config.py', '%s/config.py' % save_path)
 
@@ -26,8 +26,9 @@ def main(save_path, params):
     if dataset == "clicr":
         dp = DataPreprocessor.DataPreprocessorClicr()
         data = dp.preprocess(
-            "/mnt/b5320167-5dbd-4498-bf34-173ac5338c8d/Datasets/bmj_case_reports_data/dataset_json_concept_annotated/",
-            no_training_set=False, use_chars=use_chars)
+            #"/mnt/b5320167-5dbd-4498-bf34-173ac5338c8d/Datasets/bmj_case_reports_data/dataset_json_concept_annotated/",
+            "data/",
+            no_training_set=False, use_chars=use_chars, relabeling=relabeling)
     else:
         dp = DataPreprocessor.DataPreprocessor()
         if dataset == "cnn":
@@ -52,7 +53,7 @@ def main(save_path, params):
     max_acc = 0.
     deltas = []
 
-    logger = open(save_path + '/log', 'a', 0)
+    logger = open(save_path + '/log', 'a')
 
     if os.path.isfile('%s/best_model.p' % save_path):
         print('loading previously saved model')
@@ -63,7 +64,7 @@ def main(save_path, params):
         print('loading init model')
         m.load_model('%s/model_init.p' % save_path)
 
-    for epoch in xrange(NUM_EPOCHS):
+    for epoch in range(NUM_EPOCHS):
         estart = time.time()
         new_max = False
 

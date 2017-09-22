@@ -1,6 +1,6 @@
 import os
 
-os.environ["THEANO_FLAGS"] = "mode=FAST_RUN,device=gpu,floatX=float32"
+#os.environ["THEANO_FLAGS"] = "mode=FAST_RUN,device=gpu,floatX=float32"
 
 import train
 import test
@@ -28,6 +28,8 @@ parser.add_argument('--seed', dest='seed', type=int, default=1,
                     help='Seed for different experiments with same settings')
 parser.add_argument('--gating_fn', dest='gating_fn', type=str, default='T.mul',
                     help='Gating function (T.mul || Tsum || Tconcat)')
+parser.add_argument('--relabeling', dest='relabeling', type=int, default=1,
+                    help='use relabeling (anonymization) (0-no, 1-yes)')
 args = parser.parse_args()
 cmd = vars(args)
 params = get_params(cmd['dataset'])
@@ -38,12 +40,16 @@ random.seed(params['seed'])
 
 # save directory
 w2v_filename = params['word2vec'].split('/')[-1].split('.')[0] if params['word2vec'] else 'None'
-save_path = ('/mnt/b5320167-5dbd-4498-bf34-173ac5338c8d/Tools/ga-reader/experiments/' + params['dataset'].split('/')[0] +
+save_path = ('experiments/' +
+             #'/mnt/b5320167-5dbd-4498-bf34-173ac5338c8d/Tools/ga-reader/experiments/' +
+             params['dataset'].split('/')[0] +
              '_nhid%d' % params['nhidden'] + '_nlayers%d' % params['nlayers'] +
              '_dropout%.1f' % params['dropout'] + '_%s' % w2v_filename + '_chardim%d' % params['char_dim'] +
              '_train%d' % params['train_emb'] +
              '_seed%d' % params['seed'] + '_use-feat%d' % params['use_feat'] +
-             '_gf%s' % params['gating_fn'] + '/')
+             '_gf%s' % params['gating_fn'] +
+             '_relab%d' % params['relabeling'] +
+             '/')
 if not os.path.exists(save_path): os.makedirs(save_path)
 
 # train
