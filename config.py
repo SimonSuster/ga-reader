@@ -28,6 +28,8 @@ def get_params(dataset):
         return cbtne_params
     elif dataset=='clicr':
         return clicr_params
+    elif dataset=='clicr_plain':
+        return clicr_plain_params
     else:
         raise ValueError("Dataset %s not found"%dataset)
 
@@ -42,7 +44,7 @@ cbtcn_params = {
 
 wdw_params = {
         'nhidden'   :   128,
-        'char_dim'  :   25,
+        'char_dim'  :   0,#25,
         'dropout'   :   0.3,
         'word2vec'  :   'data/word2vec_glove.txt',
         'train_emb' :   0,
@@ -59,6 +61,16 @@ clicr_params = {
     'test_file': '/mnt/b5320167-5dbd-4498-bf34-173ac5338c8d/Datasets/bmj_case_reports_data/dataset_json_concept_annotated/test1.0.json',
     'validation_file': '/mnt/b5320167-5dbd-4498-bf34-173ac5338c8d/Datasets/bmj_case_reports_data/dataset_json_concept_annotated/dev1.0.json'
 }
+
+clicr_plain_params = {
+    'nhidden': 128,
+    'char_dim': 0,
+    'dropout': 0.2,
+    'word2vec': '/nas/corpora/accumulate/clicr/embeddings/de004a58-6eef-11e7-ac2f-901b0e5592c8/embeddings', # Pubmed, 200d
+    'train_emb': 1,
+    'use_feat': 0
+}
+
 cnn_params = {
         'nhidden'   :   256,
         'char_dim'  :   0,

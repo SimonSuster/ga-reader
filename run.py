@@ -23,7 +23,7 @@ parser.add_argument('--dropout', dest='dropout', type=float, default=0.2,
 parser.add_argument('--use_feat', dest='use_feat', type=int, default=0,
                     help='use indicator feature (0-no, 1-yes)')
 parser.add_argument('--dataset', dest='dataset', type=str, default='wdw',
-                    help='Dataset - (cnn || dailymail || cbtcn || cbtne || wdw || clicr)')
+                    help='Dataset - (cnn || dailymail || cbtcn || cbtne || wdw || clicr || clicr_plain)')
 parser.add_argument('--seed', dest='seed', type=int, default=1,
                     help='Seed for different experiments with same settings')
 parser.add_argument('--gating_fn', dest='gating_fn', type=str, default='T.mul',

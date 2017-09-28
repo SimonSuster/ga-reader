@@ -12,8 +12,8 @@ SYMB_END = "@end"
 
 class Data:
 
-    def __init__(self, dictionary, num_entities, training, validation, test, train_relabeling_dicts,
-                 val_relabeling_dicts, test_relabeling_dicts):
+    def __init__(self, dictionary, num_entities, training, validation, test, train_relabeling_dicts=None,
+                 val_relabeling_dicts=None, test_relabeling_dicts=None):
         self.dictionary = dictionary
         self.training = training
         self.validation = validation

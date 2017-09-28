@@ -35,6 +35,9 @@ def main(save_path, params):
             dataset = "/mnt/b5320167-5dbd-4498-bf34-173ac5338c8d/Datasets/CNN_DailyMail/cnn/questions/"
         elif dataset == "wdw":
             dataset = "/mnt/b5320167-5dbd-4498-bf34-173ac5338c8d/Datasets/wdw/"
+        elif dataset == "clicr_plain":
+            #dataset = "/mnt/b5320167-5dbd-4498-bf34-173ac5338c8d/Datasets/bmj_case_reports_data/dataset_plain/"
+            dataset = "dataset_plain/"
         data = dp.preprocess(dataset, no_training_set=False, use_chars=use_chars)
 
     print("building minibatch loaders ...")
