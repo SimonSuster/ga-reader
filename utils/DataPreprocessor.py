@@ -320,7 +320,7 @@ class DataPreprocessorClicr:
                     else:
                         qry_chars = []
                     ans = list(map(lambda w: w_dict.get(w, 0), ans_raw.split()))
-                    cand = [map(lambda w: w_dict.get(w, 0), c) for c in cand_raw]
+                    cand = [list(map(lambda w: w_dict.get(w, 0), c)) for c in cand_raw]
 
                     if use_chars:
                         doc_chars = list(map(lambda w: list(map(lambda c: c_dict.get(c, c_dict[' ']),
@@ -381,7 +381,7 @@ class DataPreprocessorClicr:
                     else:
                         qry_chars = []
                     ans = list(map(lambda w: w_dict.get(w, 0), ans_raw.split()))
-                    cand = [map(lambda w: w_dict.get(w, 0), c) for c in cand_raw]
+                    cand = [list(map(lambda w: w_dict.get(w, 0), c)) for c in cand_raw]
 
                     if use_chars:
                         doc_chars = list(map(lambda w: list(map(lambda c: c_dict.get(c, c_dict[' ']),
@@ -510,7 +510,7 @@ class DataPreprocessor:
         else:
             doc_chars, qry_chars = [], []
         ans = list(map(lambda w:w_dict.get(w,0), ans_raw.split()))
-        cand = [map(lambda w:w_dict.get(w,0), c) for c in cand_raw]
+        cand = [list(map(lambda w:w_dict.get(w,0), c)) for c in cand_raw]
 
         return doc_words, qry_words, ans, cand, doc_chars, qry_chars, cloze
 
