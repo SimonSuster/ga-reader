@@ -26,8 +26,8 @@ def main(save_path, params):
     if dataset == "clicr":
         dp = DataPreprocessor.DataPreprocessorClicr()
         data = dp.preprocess(
-            "/mnt/b5320167-5dbd-4498-bf34-173ac5338c8d/Datasets/bmj_case_reports_data/dataset_json_concept_annotated/",
-            #"data/",
+            #"/mnt/b5320167-5dbd-4498-bf34-173ac5338c8d/Datasets/bmj_case_reports_data/dataset_json_concept_annotated/",
+            "data/",
             ent_setup=ent_setup, no_training_set=False, use_chars=use_chars)
     else:
         dp = DataPreprocessor.DataPreprocessor()
