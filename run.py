@@ -28,8 +28,8 @@ parser.add_argument('--seed', dest='seed', type=int, default=1,
                     help='Seed for different experiments with same settings')
 parser.add_argument('--gating_fn', dest='gating_fn', type=str, default='T.mul',
                     help='Gating function (T.mul || Tsum || Tconcat)')
-parser.add_argument('--relabeling', dest='relabeling', type=int, default=1,
-                    help='use relabeling (anonymization) (0-no, 1-yes)')
+parser.add_argument('--ent_setup', dest='ent_setup', type=str, default='ent-anonym',
+                    help='Setup (ent-anonym || ent || no-ent)')
 args = parser.parse_args()
 cmd = vars(args)
 params = get_params(cmd['dataset'])
@@ -48,7 +48,7 @@ save_path = ('experiments/' +
              '_train%d' % params['train_emb'] +
              '_seed%d' % params['seed'] + '_use-feat%d' % params['use_feat'] +
              '_gf%s' % params['gating_fn'] +
-             '_relab%d' % params['relabeling'] +
+             '_stp%s' % params['ent_setup'] +
              '/')
 if not os.path.exists(save_path): os.makedirs(save_path)
 

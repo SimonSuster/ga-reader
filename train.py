@@ -17,7 +17,7 @@ def main(save_path, params):
     char_dim = params['char_dim']
     use_feat = params['use_feat']
     gating_fn = params['gating_fn']
-    relabeling = params['relabeling']
+    ent_setup = params['ent_setup']  # ent, ent-anonym, no-ent
     # save settings
     shutil.copyfile('config.py', '%s/config.py' % save_path)
 
@@ -26,9 +26,9 @@ def main(save_path, params):
     if dataset == "clicr":
         dp = DataPreprocessor.DataPreprocessorClicr()
         data = dp.preprocess(
-            #"/mnt/b5320167-5dbd-4498-bf34-173ac5338c8d/Datasets/bmj_case_reports_data/dataset_json_concept_annotated/",
-            "data/",
-            no_training_set=False, use_chars=use_chars, relabeling=relabeling)
+            "/mnt/b5320167-5dbd-4498-bf34-173ac5338c8d/Datasets/bmj_case_reports_data/dataset_json_concept_annotated/",
+            #"data/",
+            ent_setup=ent_setup, no_training_set=False, use_chars=use_chars)
     else:
         dp = DataPreprocessor.DataPreprocessor()
         if dataset == "cnn":
@@ -36,8 +36,8 @@ def main(save_path, params):
         elif dataset == "wdw":
             dataset = "/mnt/b5320167-5dbd-4498-bf34-173ac5338c8d/Datasets/wdw/"
         elif dataset == "clicr_plain":
-            #dataset = "/mnt/b5320167-5dbd-4498-bf34-173ac5338c8d/Datasets/bmj_case_reports_data/dataset_plain/"
-            dataset = "dataset_plain/"
+            dataset = "/mnt/b5320167-5dbd-4498-bf34-173ac5338c8d/Datasets/bmj_case_reports_data/dataset_plain/"
+            #dataset = "dataset_plain/"
         data = dp.preprocess(dataset, no_training_set=False, use_chars=use_chars)
 
     print("building minibatch loaders ...")

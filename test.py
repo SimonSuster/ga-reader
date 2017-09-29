@@ -17,14 +17,14 @@ def main(load_path, params, mode='test'):
     char_dim = params['char_dim']
     use_feat = params['use_feat']
     gating_fn = params['gating_fn']
-    relabeling = params['relabeling']
+    ent_setup = params['ent_setup']
 
     if dataset == "clicr":
         dp = DataPreprocessor.DataPreprocessorClicr()
         data = dp.preprocess(
             #"/mnt/b5320167-5dbd-4498-bf34-173ac5338c8d/Datasets/bmj_case_reports_data/dataset_json_concept_annotated/",
             "data/",
-            no_training_set=True, relabeling=relabeling)
+            ent_setup=ent_setup, no_training_set=True)
     else:
         dp = DataPreprocessor.DataPreprocessor()
         if dataset == "cnn":
