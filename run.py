@@ -40,15 +40,17 @@ random.seed(params['seed'])
 
 # save directory
 w2v_filename = params['word2vec'].split('/')[-1].split('.')[0] if params['word2vec'] else 'None'
-save_path = ('experiments/' +
-             #'/mnt/b5320167-5dbd-4498-bf34-173ac5338c8d/Tools/ga-reader/experiments/' +
+
+setup_name = '_stp%s' % params['ent_setup']# if args.dataset == "clicr" else ""
+save_path = (#'experiments/' +
+             '/mnt/b5320167-5dbd-4498-bf34-173ac5338c8d/Tools/ga-reader/experiments/' +
              params['dataset'].split('/')[0] +
              '_nhid%d' % params['nhidden'] + '_nlayers%d' % params['nlayers'] +
              '_dropout%.1f' % params['dropout'] + '_%s' % w2v_filename + '_chardim%d' % params['char_dim'] +
              '_train%d' % params['train_emb'] +
              '_seed%d' % params['seed'] + '_use-feat%d' % params['use_feat'] +
              '_gf%s' % params['gating_fn'] +
-             '_stp%s' % params['ent_setup'] +
+              setup_name +
              '/')
 if not os.path.exists(save_path): os.makedirs(save_path)
 

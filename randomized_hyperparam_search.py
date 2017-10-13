@@ -6,7 +6,7 @@ import numpy as np
 def ga_reader_parameter_space():
     return {
     "nhidden": (50, 160),
-    "dropout": (0.1, 0.7),
+    "dropout": (0.1, 0.6),
     "use_feat": [0, 1]
     }
 

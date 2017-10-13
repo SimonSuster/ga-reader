@@ -115,6 +115,7 @@ class MiniBatchLoader():
                 m_c[n, index] = 1
                 c[n, index, it] = 1
                 if ans == cc: a[n] = it  # answer
+                # if the gold answer is not among cands (in doc), ans idx stays 0
 
             cl[n] = cloze
             fnames[n] = fname

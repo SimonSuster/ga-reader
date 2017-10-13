@@ -1,5 +1,5 @@
 import pickle
-
+import shutil
 import numpy as np
 
 from config import *
@@ -18,24 +18,24 @@ def main(load_path, params, mode='test'):
     use_feat = params['use_feat']
     gating_fn = params['gating_fn']
     ent_setup = params['ent_setup']
+    # save settings
+    shutil.copyfile('config.py', '%s/config_test.py' % load_path)
 
     if dataset == "clicr":
         dp = DataPreprocessor.DataPreprocessorClicr()
-        data = dp.preprocess(
-            #"/mnt/b5320167-5dbd-4498-bf34-173ac5338c8d/Datasets/bmj_case_reports_data/dataset_json_concept_annotated/",
-            "data/",
-            ent_setup=ent_setup, no_training_set=True)
+        #dataset_path = "/mnt/b5320167-5dbd-4498-bf34-173ac5338c8d/Datasets/bmj_case_reports_data/dataset_json_concept_annotated/"
+        dataset_path = "data/"
+        data = dp.preprocess(dataset_path, ent_setup=ent_setup, no_training_set=True)
     else:
         dp = DataPreprocessor.DataPreprocessor()
         if dataset == "cnn":
-            dataset = "/mnt/b5320167-5dbd-4498-bf34-173ac5338c8d/Datasets/CNN_DailyMail/cnn/questions/"
+            dataset_path = "/mnt/b5320167-5dbd-4498-bf34-173ac5338c8d/Datasets/CNN_DailyMail/cnn/questions/"
         elif dataset == "wdw":
-            dataset = "/mnt/b5320167-5dbd-4498-bf34-173ac5338c8d/Datasets/wdw/"
+            dataset_path = "/mnt/b5320167-5dbd-4498-bf34-173ac5338c8d/Datasets/wdw/"
         elif dataset == "clicr_plain":
-            #dataset = "/mnt/b5320167-5dbd-4498-bf34-173ac5338c8d/Datasets/bmj_case_reports_data/dataset_plain/"
-            dataset = "dataset_plain/"
-
-        data = dp.preprocess(dataset, no_training_set=True)
+            dataset_path = "/mnt/b5320167-5dbd-4498-bf34-173ac5338c8d/Datasets/bmj_case_reports_data/dataset_plain/no-ent/"
+            #dataset_path = "dataset_plain/no-ent/"
+        data = dp.preprocess(dataset_path, no_training_set=True)
     inv_vocab = data.inv_dictionary
 
     print("building minibatch loaders ...")
@@ -43,12 +43,13 @@ def main(load_path, params, mode='test'):
         batch_loader_test = MiniBatchLoader.MiniBatchLoader(data.test, BATCH_SIZE)
     else:
         batch_loader_test = MiniBatchLoader.MiniBatchLoader(data.validation, BATCH_SIZE)
+    f_to_cand = {i[-1]: i[3] for i in batch_loader_test.questions}
 
     print("building network ...")
     W_init, embed_dim = Helpers.load_word2vec_embeddings(data.dictionary[0], word2vec)
     m = GAReader.Model(nlayers, data.vocab_size, data.num_chars, W_init,
                        nhidden, embed_dim, dropout, train_emb,
-                       char_dim, use_feat, gating_fn, save_attn=True)
+                       char_dim, use_feat, gating_fn, save_attn=False)
     m.load_model('%s/best_model.p' % load_path)
 
     print("testing ...")
@@ -64,14 +65,12 @@ def main(load_path, params, mode='test'):
 
         for f in range(len(fnames)):
             pred_cand = probs[f].argmax()
-            cand_pos = [c for c, i in enumerate(m_c[f]) if i == 1]
-            pred_cand_pos = cand_pos[pred_cand]
-            pred_cand_id = dw[f, pred_cand_pos, 0]  # n, doc_id, 1
-            pred_ent_name = inv_vocab[pred_cand_id]
-            if relabeling:
+            pred_a_ids = f_to_cand[fnames[f]][pred_cand]
+            pred_a = " ".join([inv_vocab[i] for i in pred_a_ids])
+            if ent_setup == "ent-anonym" and dataset == "clicr":
                 relabeling_dicts = data.test_relabeling_dicts if mode == 'test' else data.val_relabeling_dicts
-                pred_ent_name = relabeling_dicts[fnames[f]][pred_ent_name]
-            pred_ans[fnames[f]] = pred_ent_name
+                pred_a = relabeling_dicts[fnames[f]][pred_a]
+            pred_ans[fnames[f]] = pred_a
 
         bsize = dw.shape[0]
         total_loss += bsize * loss
@@ -81,12 +80,14 @@ def main(load_path, params, mode='test'):
         fids += fnames
         n += bsize
 
-    if params["dataset"] == "clicr" and (mode == 'test' or mode == 'validation'):
+    if (params["dataset"] == "clicr" or params["dataset"] == "clicr_plain") \
+            and (mode == 'test' or mode == 'validation'):
         print("writing predictions")
         preds_data = utils.to_output_preds(pred_ans)
         preds_filepath = load_path + '/test.preds'
         utils.write_preds(preds_data, file_name=preds_filepath)
-        utils.external_eval(preds_filepath, preds_filepath + ".scores", params["test_file"] if mode == 'test' else params["validation_file"])
+        utils.external_eval(preds_filepath, preds_filepath + ".scores", dataset_path + ("test1.0.json" if mode == "test"
+                                                                                        else "dev1.0.json"))
     logger = open(load_path + '/log', 'a')
     message = '%s Loss %.4e acc=%.4f' % (mode.upper(), total_loss / n, total_acc / n)
     print(message)
@@ -94,7 +95,7 @@ def main(load_path, params, mode='test'):
     logger.close()
 
     np.save('%s/%s.probs' % (load_path, mode), np.asarray(pr))
-    pickle.dump(attns, open('%s/%s.attns' % (load_path, mode), 'w'))
+    pickle.dump(attns, open('%s/%s.attns' % (load_path, mode), 'wb'))
     f = open('%s/%s.ids' % (load_path, mode), 'w')
     for item in fids: f.write(item + '\n')
     f.close()

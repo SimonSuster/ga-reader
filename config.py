@@ -59,7 +59,9 @@ clicr_params = {
     'train_emb': 1,
     'use_feat': 0,
     'test_file': '/mnt/b5320167-5dbd-4498-bf34-173ac5338c8d/Datasets/bmj_case_reports_data/dataset_json_concept_annotated/test1.0.json',
+    #'test_file': 'data/test1.0.json',
     'validation_file': '/mnt/b5320167-5dbd-4498-bf34-173ac5338c8d/Datasets/bmj_case_reports_data/dataset_json_concept_annotated/dev1.0.json'
+    #'validation_file': 'data/dev1.0.json'
 }
 
 clicr_plain_params = {

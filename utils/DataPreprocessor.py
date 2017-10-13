@@ -156,13 +156,13 @@ class DataPreprocessorClicr:
                 vocabularies = list(entities) + list(tokens)
 
             elif ent_setup == "no-ent":  # ignore entity markings
-                # train+dev here (remove_notfound=True|False), test below
-                for datum in dataset_train[DATA_KEY] + dataset_dev[DATA_KEY]:
+                # train here (remove_notfound=True|False), dev/test below
+                for datum in dataset_train[DATA_KEY]:
                     document = remove_entity_marks(datum[DOC_KEY][TITLE_KEY] + "\n" + datum[DOC_KEY][CONTEXT_KEY])
                     document = document.lower()
                     assert document
+                    doc_raw = document.split()
                     for qa in datum[DOC_KEY][QAS_KEY]:
-                        doc_raw = document.split()
                         question = remove_entity_marks(qa[QUERY_KEY]).lower()
                         assert question
                         qry_raw = question.split()
@@ -172,7 +172,7 @@ class DataPreprocessorClicr:
                                 ans_raw = ans[TXT_KEY].lower()
                         assert ans_raw
                         if remove_notfound:
-                            if ans_raw not in document:
+                            if ans_raw not in doc_raw:
                                 found_umls = False
                                 for ans in qa[ANS_KEY]:
                                     if ans[ORIG_KEY] == "UMLS":
@@ -189,13 +189,13 @@ class DataPreprocessorClicr:
                         n += 1
                         if n % 10000 == 0:
                             print(n)
-                # treat test separately to allow remove_notfound=False
-                for datum in dataset_test[DATA_KEY]:
+                # treat dev/test separately to allow remove_notfound=False
+                for datum in dataset_test[DATA_KEY] + dataset_dev[DATA_KEY]:
                     document = remove_entity_marks(datum[DOC_KEY][TITLE_KEY] + "\n" + datum[DOC_KEY][CONTEXT_KEY])
                     document = document.lower()
                     assert document
+                    doc_raw = document.split()
                     for qa in datum[DOC_KEY][QAS_KEY]:
-                        doc_raw = document.split()
                         question = remove_entity_marks(qa[QUERY_KEY]).lower()
                         assert question
                         qry_raw = question.split()
@@ -347,12 +347,12 @@ class DataPreprocessorClicr:
                             ans_raw = ans[TXT_KEY].lower()
                     assert ans_raw
                     if remove_notfound:
-                        if ans_raw not in document:
+                        if ans_raw not in doc_raw:
                             found_umls = False
                             for ans in qa[ANS_KEY]:
                                 if ans[ORIG_KEY] == "UMLS":
                                     umls_answer = ans[TXT_KEY].lower()
-                                    if umls_answer in document:
+                                    if umls_answer in doc_raw:
                                         found_umls = True
                                         ans_raw = umls_answer
                             if not found_umls:
@@ -524,7 +524,7 @@ class DataPreprocessor:
         where each element is in the form of (document, query, answer, filename)
         """
         all_files = glob.glob(directory + '/*.question')
-        questions = [self.parse_one_file(f, dictionary, use_chars) + (f,) for f in all_files]
+        questions = [self.parse_one_file(f, dictionary, use_chars) + (os.path.basename(f)[:-len(".question")],) for f in all_files]
         return questions
 
     def gen_text_for_word2vec(self, question_dir, text_file):

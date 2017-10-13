@@ -36,8 +36,8 @@ def main(save_path, params):
         elif dataset == "wdw":
             dataset = "/mnt/b5320167-5dbd-4498-bf34-173ac5338c8d/Datasets/wdw/"
         elif dataset == "clicr_plain":
-            dataset = "/mnt/b5320167-5dbd-4498-bf34-173ac5338c8d/Datasets/bmj_case_reports_data/dataset_plain/"
-            #dataset = "dataset_plain/"
+            #dataset = "/mnt/b5320167-5dbd-4498-bf34-173ac5338c8d/Datasets/bmj_case_reports_data/dataset_plain/no-ent/"
+            dataset = "dataset_plain/no-ent/"
         data = dp.preprocess(dataset, no_training_set=False, use_chars=use_chars)
 
     print("building minibatch loaders ...")
@@ -92,7 +92,6 @@ def main(save_path, params):
                     total_loss += bsize * loss
                     total_acc += bsize * acc
                     n += bsize
-
                 val_acc = total_acc / n
                 if val_acc > max_acc:
                     max_acc = val_acc

@@ -186,6 +186,7 @@ class Model:
             l_m = PairwiseInteractionLayer([l_doc, l_q])
             attentions.append(L.get_output(l_m, deterministic=True))
 
+        # get prob over candidates:
         l_prob = AttentionSumLayer([l_doc, l_q], self.inps[4], self.inps[12],
                                    mask_input=self.inps[10])
         final = L.get_output(l_prob)

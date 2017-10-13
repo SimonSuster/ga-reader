@@ -14,8 +14,8 @@ if __name__ == "__main__":
         print("Run {}...".format(n))
         params = random_search.sample()
         print(params)
-        command = " ".join(["THEANO_FLAGS=mode=FAST_RUN,device=gpu2,floatX=float32 python3", "run.py"] +
-                           ["--dataset clicr --mode 1 --ent_setup no-ent"] +
+        command = " ".join(["THEANO_FLAGS=mode=FAST_RUN,device=gpu0,floatX=float32 python3", "run.py"] +
+                           ["--dataset clicr_plain --mode 1"] +
                            ["--{} {}".format(k, v) for k, v in params.items()]
                            )
         subprocess.call(command, shell=True)

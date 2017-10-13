@@ -77,8 +77,10 @@ def to_output_preds(preds):
     """
 
     def prepare_answer(txt):
-        assert txt.startswith("@entity")
-        return txt[len("@entity"):].replace("_", " ")
+        if txt.startswith("@entity"):
+            return txt[len("@entity"):].replace("_", " ")
+        else:
+            return txt
 
     return {q_id: prepare_answer(answer) for q_id, answer in preds.items()}
 
@@ -89,15 +91,15 @@ def external_eval(preds_file, file_name, eval_dataset):
         eval_dataset, preds_file)
     cmd_open = subprocess.check_output(cmd, shell=True)
     with open(file_name, "w") as fh:
-        fh.write(cmd_open)
+        fh.write(cmd_open.decode("ascii"))
 
-    print("External evaluation, NOT penalizing unanswered...")
-    save_json(intersect_on_ids(load_json(eval_dataset), load_json(preds_file)), "/tmp/small.json")
-    cmd = "python3 /home/suster/Apps/bmj_case_reports/evaluate.py -test_file /tmp/small.json -prediction_file {} -embeddings_file /nas/corpora/accumulate/clicr/embeddings/b2257916-6a9f-11e7-aa74-901b0e5592c8/embeddings -downcase".format(
-        preds_file)
-    cmd_open = subprocess.check_output(cmd, shell=True)
-    with open(file_name + ".no_penal", "w") as fh:
-        fh.write(cmd_open)
+#    print("External evaluation, NOT penalizing unanswered...")
+#    save_json(intersect_on_ids(load_json(eval_dataset), load_json(preds_file)), "/tmp/small.json")
+#    cmd = "python3 /home/suster/Apps/bmj_case_reports/evaluate.py -test_file /tmp/small.json -prediction_file {} -embeddings_file /nas/corpora/accumulate/clicr/embeddings/b2257916-6a9f-11e7-aa74-901b0e5592c8/embeddings -downcase".format(
+#        preds_file)
+#    cmd_open = subprocess.check_output(cmd, shell=True)
+#    with open(file_name + ".no_penal", "w") as fh:
+#        fh.write(cmd_open.decode("ascii"))
 
 
 def document_instance(context, title, qas):
