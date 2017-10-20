@@ -14,8 +14,8 @@ if __name__ == "__main__":
         print("Run {}...".format(n))
         params = random_search.sample()
         print(params)
-        command = " ".join(["THEANO_FLAGS=mode=FAST_RUN,device=gpu0,floatX=float32 python3", "run.py"] +
-                           ["--dataset clicr_plain --mode 1"] +
+        command = " ".join(["THEANO_FLAGS=mode=FAST_RUN,device=gpu1,floatX=float32 python3", "run.py"] +
+                           ["--dataset clicr_plain --mode 1 --data_path /mnt/b5320167-5dbd-4498-bf34-173ac5338c8d/Datasets/bmj_case_reports_data/dataset_plain/ent/gareader/ --experiments_path /mnt/b5320167-5dbd-4498-bf34-173ac5338c8d/Tools/ga-reader/experiments/"] +
                            ["--{} {}".format(k, v) for k, v in params.items()]
                            )
         subprocess.call(command, shell=True)

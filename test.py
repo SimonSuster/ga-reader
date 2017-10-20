@@ -18,22 +18,23 @@ def main(load_path, params, mode='test'):
     use_feat = params['use_feat']
     gating_fn = params['gating_fn']
     ent_setup = params['ent_setup']
+    data_path = params['data_path']
     # save settings
     shutil.copyfile('config.py', '%s/config_test.py' % load_path)
 
     if dataset == "clicr":
         dp = DataPreprocessor.DataPreprocessorClicr()
         #dataset_path = "/mnt/b5320167-5dbd-4498-bf34-173ac5338c8d/Datasets/bmj_case_reports_data/dataset_json_concept_annotated/"
-        dataset_path = "data/"
-        data = dp.preprocess(dataset_path, ent_setup=ent_setup, no_training_set=True)
+        #dataset_path = "data/"
+        data = dp.preprocess(data_path, ent_setup=ent_setup, no_training_set=True)
     else:
         dp = DataPreprocessor.DataPreprocessor()
         if dataset == "cnn":
-            dataset_path = "/mnt/b5320167-5dbd-4498-bf34-173ac5338c8d/Datasets/CNN_DailyMail/cnn/questions/"
+            dataset_path = data_path + "CNN_DailyMail/cnn/questions/"#"/mnt/b5320167-5dbd-4498-bf34-173ac5338c8d/Datasets/CNN_DailyMail/cnn/questions/"
         elif dataset == "wdw":
-            dataset_path = "/mnt/b5320167-5dbd-4498-bf34-173ac5338c8d/Datasets/wdw/"
+            dataset_path = data_path + "wdw/" #"/mnt/b5320167-5dbd-4498-bf34-173ac5338c8d/Datasets/wdw/"
         elif dataset == "clicr_plain":
-            dataset_path = "/mnt/b5320167-5dbd-4498-bf34-173ac5338c8d/Datasets/bmj_case_reports_data/dataset_plain/no-ent/"
+            dataset_path = data_path #"/mnt/b5320167-5dbd-4498-bf34-173ac5338c8d/Datasets/bmj_case_reports_data/dataset_plain/no-ent/"
             #dataset_path = "dataset_plain/no-ent/"
         data = dp.preprocess(dataset_path, no_training_set=True)
     inv_vocab = data.inv_dictionary
