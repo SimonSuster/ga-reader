@@ -15,7 +15,7 @@ parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFo
 parser.add_argument('--mode', dest='mode', type=int, default=0,
                     help='run mode - (0-train+test, 1-train only, 2-test only, 3-val only)')
 parser.add_argument('--experiments_path', default='experiments/')
-parser.add_argument('--data_path', default='data/')
+parser.add_argument('--data_path')
 parser.add_argument('--nlayers', dest='nlayers', type=int, default=3,
                     help='Number of reader layers')
 parser.add_argument('--nhidden', dest='nhidden', type=int, default=128,
@@ -25,7 +25,7 @@ parser.add_argument('--dropout', dest='dropout', type=float, default=0.2,
 parser.add_argument('--use_feat', dest='use_feat', type=int, default=0,
                     help='use indicator feature (0-no, 1-yes)')
 parser.add_argument('--dataset', dest='dataset', type=str, default='wdw',
-                    help='Dataset - (cnn || dailymail || cbtcn || cbtne || wdw || clicr || clicr_plain)')
+                    help='Dataset - (cnn || dailymail || cbtcn || cbtne || wdw || clicr || clicr_plain || clicr_novice)')
 parser.add_argument('--seed', dest='seed', type=int, default=1,
                     help='Seed for different experiments with same settings')
 parser.add_argument('--gating_fn', dest='gating_fn', type=str, default='T.mul',
@@ -43,7 +43,7 @@ random.seed(params['seed'])
 # save directory
 w2v_filename = params['word2vec'].split('/')[-1].split('.')[0] if params['word2vec'] else 'None'
 
-setup_name = '_stp%s' % params['ent_setup'] if args.dataset == "clicr" else "ent"
+setup_name = '_stp%s' % params['ent_setup'] if (args.dataset == "clicr" or args.dataset == "clicr_novice") else "ent"
 save_path = (args.experiments_path +
              #'/mnt/b5320167-5dbd-4498-bf34-173ac5338c8d/Tools/ga-reader/experiments/' +
              params['dataset'].split('/')[0] +
@@ -56,7 +56,8 @@ save_path = (args.experiments_path +
              '/')
 if not os.path.exists(save_path): os.makedirs(save_path)
 
-params['data_path'] = args.data_path
+if args.data_path is not None:
+    params['data_path'] = args.data_path
 # train
 if params['mode'] < 2:
     train.main(save_path, params)

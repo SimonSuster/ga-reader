@@ -85,10 +85,9 @@ def to_output_preds(preds):
     return {q_id: prepare_answer(answer) for q_id, answer in preds.items()}
 
 
-def external_eval(preds_file, file_name, eval_dataset):
+def external_eval(preds_file, file_name, eval_dataset, extended=False):
     print("External evaluation, penalizing unanswered...")
-    cmd = "python3 /home/suster/Apps/bmj_case_reports/evaluate.py -test_file {} -prediction_file {} -embeddings_file /nas/corpora/accumulate/clicr/embeddings/b2257916-6a9f-11e7-aa74-901b0e5592c8/embeddings -downcase".format(
-        eval_dataset, preds_file)
+    cmd = "python3 /home/suster/Apps/bmj_case_reports/evaluate.py -test_file {} -prediction_file {} -embeddings_file /nas/corpora/accumulate/clicr/embeddings/b2257916-6a9f-11e7-aa74-901b0e5592c8/embeddings -downcase {}".format(eval_dataset, preds_file, "-extended" if extended else "")
     cmd_open = subprocess.check_output(cmd, shell=True)
     with open(file_name, "w") as fh:
         fh.write(cmd_open.decode("ascii"))

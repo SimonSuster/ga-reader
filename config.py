@@ -30,6 +30,8 @@ def get_params(dataset):
         return clicr_params
     elif dataset=='clicr_plain':
         return clicr_plain_params
+    elif dataset=='clicr_novice':
+        return clicr_novice_params
     else:
         raise ValueError("Dataset %s not found"%dataset)
 
@@ -43,13 +45,26 @@ cbtcn_params = {
         }
 
 wdw_params = {
-        'nhidden'   :   128,
-        'char_dim'  :   0,#25,
-        'dropout'   :   0.3,
-        'word2vec'  :   'data/word2vec_glove.txt',
-        'train_emb' :   0,
-        'use_feat'  :   1,
+    'data_path' : "data/wdw/",
+    'nhidden'   :   128,
+    'char_dim'  :   0,#25,
+    'dropout'   :   0.3,
+    'word2vec'  :   'data/word2vec_glove.txt',
+    'train_emb' :   0,
+    'use_feat'  :   1,
         }
+
+clicr_novice_params = {
+    # THEANO_FLAGS=mode=FAST_RUN,device=gpu0,floatX=float32 python3 run.py --dataset clicr_novice --mode 1 --ent_setup ent-anonym --experiments_path ../experiments/ --data_path data/
+    'test_file': '/mnt/b5320167-5dbd-4498-bf34-173ac5338c8d/Datasets/bmj_case_reports_data/dataset_json_concept_annotated/test1.0.json',
+    'validation_file': '/mnt/b5320167-5dbd-4498-bf34-173ac5338c8d/Datasets/bmj_case_reports_data/dataset_json_concept_annotated/dev1.0.json',
+    'nhidden': 128,
+    'char_dim': 0,
+    'dropout': 0.2,
+    'word2vec': '/nas/corpora/accumulate/clicr/embeddings/005853d6-7164-11e7-b58e-901b0e5592c8/embeddings_with_header', # NYT+Wikipedia, 200d
+    'train_emb': 1,
+    'use_feat': 0
+}
 
 clicr_params = {
     'nhidden': 128,
@@ -65,6 +80,8 @@ clicr_params = {
 }
 
 clicr_plain_params = {
+    'test_file' : '/mnt/b5320167-5dbd-4498-bf34-173ac5338c8d/Datasets/bmj_case_reports_data/dataset_json_concept_annotated/test1.0.json',
+    'validation_file': '/mnt/b5320167-5dbd-4498-bf34-173ac5338c8d/Datasets/bmj_case_reports_data/dataset_json_concept_annotated/dev1.0.json',
     'nhidden': 128,
     'char_dim': 0,
     'dropout': 0.2,
@@ -74,13 +91,15 @@ clicr_plain_params = {
 }
 
 cnn_params = {
-        'nhidden'   :   256,
-        'char_dim'  :   0,
-        'dropout'   :   0.2,
-        'word2vec'  :   '/nas/corpora/accumulate/clicr/embeddings/005853d6-7164-11e7-b58e-901b0e5592c8/embeddings_with_header', # NYT+Wikipedia, 200d
-        'train_emb' :   1,
-        'use_feat'  :   0,
-        }
+    'data_path': "data/CNN_DailyMail/cnn/questions/",
+    #'nhidden'   :   256,
+    'nhidden'   :   128,
+    'char_dim'  :   0,
+    'dropout'   :   0.2,
+    'word2vec'  :   '/nas/corpora/accumulate/clicr/embeddings/005853d6-7164-11e7-b58e-901b0e5592c8/embeddings_with_header', # NYT+Wikipedia, 200d
+    'train_emb' :   1,
+    'use_feat'  :   0,
+    }
 
 dailymail_params = {
         'nhidden'   :   256,
