@@ -1,6 +1,7 @@
 import os
 
 #os.environ["THEANO_FLAGS"] = "mode=FAST_RUN,device=gpu,floatX=float32"
+import sys
 
 import train
 import test
@@ -35,15 +36,16 @@ parser.add_argument('--ent_setup', dest='ent_setup', type=str, default='ent-anon
 args = parser.parse_args()
 cmd = vars(args)
 params = get_params(cmd['dataset'])
+if args.data_path is None and params["data_path"] is not None:
+    args.__setattr__("data_path", params["data_path"])
 params.update(cmd)
-
 np.random.seed(params['seed'])
 random.seed(params['seed'])
 
 # save directory
 w2v_filename = params['word2vec'].split('/')[-1].split('.')[0] if params['word2vec'] else 'None'
 
-setup_name = '_stp%s' % params['ent_setup'] if (args.dataset == "clicr" or args.dataset == "clicr_novice") else "ent"
+setup_name = '_stp%s' % params['ent_setup'] if args.dataset.startswith("clicr") else ""
 save_path = (args.experiments_path +
              #'/mnt/b5320167-5dbd-4498-bf34-173ac5338c8d/Tools/ga-reader/experiments/' +
              params['dataset'].split('/')[0] +
@@ -55,9 +57,12 @@ save_path = (args.experiments_path +
               setup_name +
              '/')
 if not os.path.exists(save_path): os.makedirs(save_path)
+print("Writing to: {}".format(save_path))
+with open(save_path + "command_runmode{}.log".format(args.mode), "w") as fh_out:
+    fh_out.write(" ".join(sys.argv))
+    for k,v in params.items():
+        fh_out.write("{}: {}\n".format(k, v))
 
-if args.data_path is not None:
-    params['data_path'] = args.data_path
 # train
 if params['mode'] < 2:
     train.main(save_path, params)

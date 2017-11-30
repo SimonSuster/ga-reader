@@ -22,6 +22,7 @@ def main(load_path, params, mode='test'):
     data_path = params['data_path']
     # save settings
     shutil.copyfile('config.py', '%s/config_test.py' % load_path)
+    use_chars = char_dim > 0
 
     if dataset == "clicr":
         dp = DataPreprocessor.DataPreprocessorClicr()
@@ -31,7 +32,7 @@ def main(load_path, params, mode='test'):
     elif dataset == "clicr_novice":
         dp = DataPreprocessor.DataPreprocessorNovice()
         data = dp.preprocess(
-            data_path, ent_setup=ent_setup, no_training_set=False, use_chars=use_chars)
+            data_path, ent_setup=ent_setup, no_training_set=True)
     else:
         dp = DataPreprocessor.DataPreprocessor()
         data = dp.preprocess(data_path, no_training_set=True)
@@ -51,6 +52,8 @@ def main(load_path, params, mode='test'):
     m = GAReader.Model(nlayers, data.vocab_size, data.num_chars, W_init,
                        nhidden, embed_dim, dropout, train_emb,
                        char_dim, use_feat, gating_fn, save_attn=False)
+    print("model load path")
+    print('%s/best_model.p' % load_path)
     m.load_model('%s/best_model.p' % load_path)
 
     print("testing ...")
@@ -68,7 +71,7 @@ def main(load_path, params, mode='test'):
             pred_cand = probs[f].argmax()
             pred_a_ids = f_to_cand[fnames[f]][pred_cand]
             pred_a = " ".join([inv_vocab[i] for i in pred_a_ids])
-            if ent_setup == "ent-anonym" and dataset == "clicr":
+            if ent_setup == "ent-anonym" and (dataset == "clicr" or dataset == "clicr_novice"):
                 relabeling_dicts = data.test_relabeling_dicts if mode == 'test' else data.val_relabeling_dicts
                 pred_a = relabeling_dicts[fnames[f]][pred_a]
             pred_ans[fnames[f]] = pred_a
@@ -81,13 +84,13 @@ def main(load_path, params, mode='test'):
         fids += fnames
         n += bsize
 
-    if (params["dataset"] == "clicr" or params["dataset"] == "clicr_plain") \
+    if (params["dataset"] == "clicr" or params["dataset"] == "clicr_plain" or params["dataset"] == "clicr_novice") \
             and (mode == 'test' or mode == 'validation'):
         print("writing predictions")
         preds_data = utils.to_output_preds(pred_ans)
-        preds_filepath = load_path + '/test.preds'
+        preds_filepath = load_path + '/{}.preds'.format(mode)
         utils.write_preds(preds_data, file_name=preds_filepath)
-        utils.external_eval(preds_filepath, preds_filepath + ".scores", params["test_file"] if mode=="test" else params["validation_file"])
+        utils.external_eval(preds_filepath, preds_filepath + ".scores", params["test_file"] if mode=="test" else params["validation_file"],extended=True)
     logger = open(load_path + '/log.test', 'a')
     message = '%s Loss %.4e acc=%.4f' % (mode.upper(), total_loss / n, total_acc / n)
     print(message)

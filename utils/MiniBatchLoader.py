@@ -111,6 +111,8 @@ class MiniBatchLoader():
 
             # search candidates in doc
             for it, cc in enumerate(cand):
+                # mark every word which is in candidate; note that candidate can occur several times in doc.
+                # final prediction is based on the sum of attention weights for all these positions in doc.
                 index = [ii for ii in range(len(doc_w)) if doc_w[ii] in cc]
                 m_c[n, index] = 1
                 c[n, index, it] = 1

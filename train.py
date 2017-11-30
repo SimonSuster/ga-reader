@@ -35,7 +35,7 @@ def main(save_path, params):
             data_path, ent_setup=ent_setup, no_training_set=False, use_chars=use_chars)
     else:
         dp = DataPreprocessor.DataPreprocessor()
-        data = dp.preprocess(dataset, no_training_set=False, use_chars=use_chars)
+        data = dp.preprocess(data_path, no_training_set=False, use_chars=use_chars)
 
     print("building minibatch loaders ...")
     batch_loader_train = MiniBatchLoader.MiniBatchLoader(data.training, BATCH_SIZE,

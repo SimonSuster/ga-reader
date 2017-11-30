@@ -67,6 +67,7 @@ clicr_novice_params = {
 }
 
 clicr_params = {
+    'data_path' : "/mnt/b5320167-5dbd-4498-bf34-173ac5338c8d/Datasets/bmj_case_reports_data/dataset_json_concept_annotated/",
     'nhidden': 128,
     'char_dim': 0,
     'dropout': 0.2,
@@ -80,6 +81,7 @@ clicr_params = {
 }
 
 clicr_plain_params = {
+    'data_path': "dataset_plain/no-ent/",
     'test_file' : '/mnt/b5320167-5dbd-4498-bf34-173ac5338c8d/Datasets/bmj_case_reports_data/dataset_json_concept_annotated/test1.0.json',
     'validation_file': '/mnt/b5320167-5dbd-4498-bf34-173ac5338c8d/Datasets/bmj_case_reports_data/dataset_json_concept_annotated/dev1.0.json',
     'nhidden': 128,
