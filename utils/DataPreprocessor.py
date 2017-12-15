@@ -34,7 +34,7 @@ class DataPreprocessorNovice:
         preprocess all data into a standalone Data object.
         the training set will be left out (to save debugging time) when no_training_set is True.
         """
-        vocab_f = os.path.join(question_dir,"vocab.txt")
+        vocab_f = os.path.join(question_dir,"vocab_novice.txt")
         word_dictionary, char_dictionary, num_entities = \
                 self.make_dictionary(question_dir, vocab_file=vocab_f, ent_setup=ent_setup, remove_notfound=False)
         dictionary = (word_dictionary, char_dictionary)
